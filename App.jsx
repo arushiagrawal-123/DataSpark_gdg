@@ -1,10 +1,12 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import Landing from "./pages/Landing";
-import Report from "./pages/Report";
-import DashboardLayout from "./pages/DashboardLayout";
-import DashboardHome from "./pages/DashboardHome";
-import Complaints from "./pages/Complaints";
-import Hotspots from "./pages/Hotspots";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+
+import Landing from "./Landing";
+import Report from "./Report";
+import DashboardLayout from "./DashboardLayout";
+import DashboardHome from "./DashboardHome";
+import Complaints from "./Complaints";
+import Hotspots from "./Hotspots";
+
 
 
 function App() {
