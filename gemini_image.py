@@ -2,7 +2,7 @@ from google import genai
 import os
 
 # Configure client using ENV variable
-client = genai.Client(api_key=os.getenv("AIzaSyBNQZUsUN6hmk7zGoielZ7mpt7eESQ2ni0"))
+client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
 
 image_url = "https://vdbetqxhwextlybbmc.supabase.co/storage/v1/object/public/campus-issues/dustbins/dust1.jpg"
 
