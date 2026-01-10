@@ -1,15 +1,7 @@
 import React from "react";
-
 import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  Tooltip,
-  ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell,
+  BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
+  PieChart, Pie, Cell
 } from "recharts";
 
 const priorityData = [
@@ -30,8 +22,6 @@ const COLORS = ["#ef4444", "#f59e0b", "#10b981", "#3b82f6"];
 function DashboardHome() {
   return (
     <div className="dashboard-home">
-
-      {/* Header */}
       <div className="dashboard-header">
         <h1>Welcome, Admin 👋</h1>
         <p>Here’s what’s happening on campus today</p>
@@ -45,12 +35,11 @@ function DashboardHome() {
         <div className="kpi-card low"><h3>Low</h3><p>60</p></div>
       </div>
 
-      {/* 📊 CHARTS SECTION */}
+      {/* Charts */}
       <div className="charts-section">
         <h2>📊 Complaint Analytics</h2>
-
         <div className="charts-grid">
-          {/* Priority Chart */}
+
           <div className="chart-card">
             <h3>Priority Distribution</h3>
             <ResponsiveContainer width="100%" height={240}>
@@ -63,18 +52,11 @@ function DashboardHome() {
             </ResponsiveContainer>
           </div>
 
-          {/* Hotspot Chart */}
           <div className="chart-card">
             <h3>Hotspot Areas</h3>
             <ResponsiveContainer width="100%" height={240}>
               <PieChart>
-                <Pie
-                  data={hotspotData}
-                  dataKey="value"
-                  nameKey="name"
-                  outerRadius={90}
-                  label
-                >
+                <Pie data={hotspotData} dataKey="value" nameKey="name" outerRadius={90} label>
                   {hotspotData.map((_, i) => (
                     <Cell key={i} fill={COLORS[i % COLORS.length]} />
                   ))}
@@ -83,9 +65,9 @@ function DashboardHome() {
               </PieChart>
             </ResponsiveContainer>
           </div>
+
         </div>
       </div>
-
     </div>
   );
 }
