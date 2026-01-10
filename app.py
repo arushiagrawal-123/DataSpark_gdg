@@ -1,5 +1,5 @@
 # ---------------- Imports ----------------
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
 import pandas as pd
 import os
@@ -10,12 +10,12 @@ app = Flask(__name__)
 CORS(app)
 
 # ---------------- Routes ----------------
-
 @app.route('/')
 def home():
     return "Smart Campus API is running!"
 
-# ---------- CSV Upload ----------
+
+# ---------------- CSV Upload Route ----------------
 @app.route('/upload', methods=['POST'])
 def upload_file():
     """
@@ -32,7 +32,8 @@ def upload_file():
     result = run_smart_campus_pipeline(df)
     return jsonify(result.to_dict(orient='records'))
 
-# ---------- ML Input from Frontend ----------
+
+# ---------------- ML Input Route ----------------
 @app.route('/ml_input', methods=['POST'])
 def ml_input():
     """
@@ -44,30 +45,28 @@ def ml_input():
 
     # Map frontend complaints to ML pipeline input
     df = pd.DataFrame([{
-        'area': c.get('category', 'Unknown'),
-        'feature1': len(c.get('title','')) % 10,  # example dummy feature
-        'feature2': 1 if c.get('priority') == 'High' else 0,
+        'feature1': len(c.get('title', '')) % 10,   # dummy numeric feature
+        'feature2': 1 if c.get('priority', '').lower() == 'high' else 0,
         'priority': c.get('priority', 'Medium'),
-        'severity': 5,     # dummy severity
+        'severity': 5,
+        'area': c.get('category', 'Unknown'),
         'hotspot': False
     } for c in data])
 
-    # Run ML pipeline if desired
+    # Run your real ML pipeline
     df = run_smart_campus_pipeline(df)
 
     return jsonify(df.to_dict(orient='records'))
 
-# ---------- Report Issue ----------
+
+# ---------------- Report Issue Route ----------------
 @app.route('/report_issue', methods=['POST'])
 def report_issue():
-    """
-    Accepts form-data with optional image from frontend Report.jsx
-    """
     title = request.form.get('title')
     description = request.form.get('description')
     category = request.form.get('category')
     location = request.form.get('location')
-    image = request.files.get('image')  # may be None
+    image = request.files.get('image')  # optional
 
     response = {
         "title": title,
@@ -77,4 +76,17 @@ def report_issue():
         "image_uploaded": bool(image)
     }
 
-    print("New report received:", response
+    print("New report received:", response)
+    return jsonify(response)
+
+
+# ---------------- Optional Dashboard Route ----------------
+@app.route('/dashboard')
+def dashboard():
+    return render_template('index.html')
+
+
+# ---------------- Run App ----------------
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port)
