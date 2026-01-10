@@ -2,6 +2,7 @@
 from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
 import pandas as pd
+import os
 from ml_logic import run_smart_campus_pipeline
 
 # ---------------- Flask App ----------------
@@ -44,23 +45,21 @@ def ml_input():
         if key not in data:
             return jsonify({"error": f"Missing key: {key}"}), 400
 
-    # Feature mapping
+    # Feature mapping with dummy fields for immediate testing
     df = pd.DataFrame([{
         'area': data['issue_type'],
         'feature1': data['severity_hint'] / 2,      # normalize
         'feature2': int(data['unsafe_flag']),
-        # Dummy fields to ensure Postman sees proper output
-        'priority': 'high',     
+        'priority': 'high',     # dummy value
         'severity': data['severity_hint'],
         'hotspot': True
     }])
 
-    # You can still call your real ML logic if needed:
-    # result = run_smart_campus_pipeline(df)
-    # For testing, we return df directly
-    result = df
+    # For now, return df directly
+    # You can uncomment this line to integrate your real ML logic later:
+    # df = run_smart_campus_pipeline(df)
 
-    return jsonify(result.to_dict(orient='records'))
+    return jsonify(df.to_dict(orient='records'))
 
 @app.route('/dashboard')
 def dashboard():
@@ -71,4 +70,6 @@ def dashboard():
 
 # ---------------- Run App ----------------
 if __name__ == "__main__":
-    app.run(debug=True)
+    # Use Render's PORT environment variable and listen on all interfaces
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port)
