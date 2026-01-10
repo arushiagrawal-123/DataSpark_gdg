@@ -1,5 +1,4 @@
 import React from "react";
-
 import { FaMapMarkerAlt } from "react-icons/fa";
 
 const hotspotsData = [
@@ -9,8 +8,6 @@ const hotspotsData = [
   { id: 4, area: "Parking Area", complaints: 2, level: "Low", lastReported: "Yesterday" },
 ];
 
-const COLORS = ["#ef4444", "#f59e0b", "#10b981", "#3b82f6"];
-
 function Hotspots() {
   return (
     <div className="hotspots-page">
@@ -18,7 +15,7 @@ function Hotspots() {
       <p className="subtitle">Areas with frequent complaints based on AI prioritization</p>
 
       <div className="hotspot-grid">
-        {hotspotsData.map((spot, idx) => (
+        {hotspotsData.map((spot) => (
           <div className="hotspot-card" key={spot.id}>
             <span className={`badge ${spot.level.toLowerCase()}`}>{spot.level}</span>
             <h3><FaMapMarkerAlt /> {spot.area}</h3>
@@ -31,4 +28,3 @@ function Hotspots() {
 }
 
 export default Hotspots;
-
