@@ -1,5 +1,5 @@
 # ---------------- Imports ----------------
-from flask import Flask, request, jsonify, render_template
+from flask import Flask, request, jsonify
 from flask_cors import CORS
 import pandas as pd
 import os
@@ -10,10 +10,12 @@ app = Flask(__name__)
 CORS(app)
 
 # ---------------- Routes ----------------
+
 @app.route('/')
 def home():
     return "Smart Campus API is running!"
 
+# ---------- CSV Upload ----------
 @app.route('/upload', methods=['POST'])
 def upload_file():
     """
@@ -30,46 +32,49 @@ def upload_file():
     result = run_smart_campus_pipeline(df)
     return jsonify(result.to_dict(orient='records'))
 
+# ---------- ML Input from Frontend ----------
 @app.route('/ml_input', methods=['POST'])
 def ml_input():
     """
-    Accepts JSON from ML/image service
+    Accepts JSON array from frontend complaints
     """
     data = request.get_json()
-
     if not data:
         return jsonify({"error": "No JSON received"}), 400
 
-    required_keys = ['issue_type', 'unsafe_flag', 'severity_hint']
-    for key in required_keys:
-        if key not in data:
-            return jsonify({"error": f"Missing key: {key}"}), 400
-
-    # Feature mapping with dummy fields for immediate testing
+    # Map frontend complaints to ML pipeline input
     df = pd.DataFrame([{
-        'area': data['issue_type'],
-        'feature1': data['severity_hint'] / 2,      # normalize
-        'feature2': int(data['unsafe_flag']),
-        'priority': 'high',     # dummy value
-        'severity': data['severity_hint'],
-        'hotspot': True
-    }])
+        'area': c.get('category', 'Unknown'),
+        'feature1': len(c.get('title','')) % 10,  # example dummy feature
+        'feature2': 1 if c.get('priority') == 'High' else 0,
+        'priority': c.get('priority', 'Medium'),
+        'severity': 5,     # dummy severity
+        'hotspot': False
+    } for c in data])
 
-    # For now, return df directly
-    # You can uncomment this line to integrate your real ML logic later:
-    # df = run_smart_campus_pipeline(df)
+    # Run ML pipeline if desired
+    df = run_smart_campus_pipeline(df)
 
     return jsonify(df.to_dict(orient='records'))
 
-@app.route('/dashboard')
-def dashboard():
+# ---------- Report Issue ----------
+@app.route('/report_issue', methods=['POST'])
+def report_issue():
     """
-    Optional HTML dashboard
+    Accepts form-data with optional image from frontend Report.jsx
     """
-    return render_template('index.html')
+    title = request.form.get('title')
+    description = request.form.get('description')
+    category = request.form.get('category')
+    location = request.form.get('location')
+    image = request.files.get('image')  # may be None
 
-# ---------------- Run App ----------------
-if __name__ == "__main__":
-    # Use Render's PORT environment variable and listen on all interfaces
-    port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port)
+    response = {
+        "title": title,
+        "description": description,
+        "category": category,
+        "location": location,
+        "image_uploaded": bool(image)
+    }
+
+    print("New report received:", response
