@@ -17,7 +17,7 @@ from an image URL and return structured JSON output.
 pip install google-genai requests pillow
 
 2. Set Gemini API key:
-export GEMINI_API_KEY="AIzaSyBNQZUsUN6hmk7zGoielZ7mpt7eESQ2ni0"
+export GEMINI_API_KEY="API_KEY_HERE"
 
 3. Run the script:
 python3 gemini_image.py
