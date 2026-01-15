@@ -1,34 +1,9 @@
-# Core ML & Data Libraries
 numpy==1.26.4
 pandas==2.1.2
 scikit-learn==1.3.2
-matplotlib==3.8.1
-seaborn==0.12.3
-opencv-python==4.8.1.78
+scipy==1.11.3
 
-# Deep Learning / NLP / Vision
-torch==2.1.1
-torchvision==0.16.2
-transformers==4.44.2
-sentence-transformers==2.2.2
-Pillow==10.0.0
-
-# Backend / API
 flask==2.3.4
 flask-cors==4.0.0
-fastapi==0.111.1
-uvicorn==0.24.0
-requests==2.32.0
-
-# Database / ORM
-sqlalchemy==2.0.22
-psycopg2-binary==2.9.7  # if using PostgreSQL
-pymongo==5.4.0           # if using MongoDB
-
-# Utilities
-python-dotenv==1.0.0
-joblib==1.3.2
-tqdm==4.66.1
-
-# Optional / Deployment
 gunicorn==22.2.0
+joblib==1.3.2
