@@ -80,11 +80,6 @@ def report_issue():
     return jsonify(response)
 
 
-# ---------------- Optional Dashboard Route ----------------
-@app.route('/dashboard')
-def dashboard():
-    return render_template('index.html')
-
 
 # ---------------- Run App ----------------
 if __name__ == "__main__":
