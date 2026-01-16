@@ -2,7 +2,8 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 import App from "./App.jsx";
-import "./index.css";
+import "./tailwind.css";  // Add this NEW line
+import "./index.css";     // This line already exists
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
