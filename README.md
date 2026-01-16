@@ -132,7 +132,7 @@ This score directly impacts:
 
 *(Add screenshots of dashboard & map here for maximum impact)*
 
-
+---
 
 ## 🧪 Future Improvements
 
@@ -146,4 +146,24 @@ This score directly impacts:
 
 ## 👤 My Contribution
 
-* Designed and implemented the
+* Designed and implemented the **entire ML prioritization pipeline**
+* Built Flask backend APIs and database schema
+* Integrated ML output with live dashboard & map
+* Engineered end-to-end data flow from complaint ingestion to visualization
+
+---
+
+## 📌 Why This Project Matters
+
+This project demonstrates:
+
+* Practical application of **ML in real-world systems**
+* Strong **backend + ML integration**
+* Ability to design **scalable, data-driven platforms**
+* Real-time systems thinking beyond toy ML models
+
+---
+
+## 📄 License
+
+MIT License
