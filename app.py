@@ -1,51 +1,110 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
+from models import db, Complaint
+from ml_logic import run_smart_campus_pipeline
 import pandas as pd
 import os
-from ml_logic import run_smart_campus_pipeline
+from datetime import datetime, date
 
 app = Flask(__name__)
-CORS(app)
+CORS(app, resources={r"/*": {"origins": "*"}}, supports_credentials=True)
 
-@app.route('/')
-def home():
-    return "Smart Campus API is running!"
+app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///database.db"
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+db.init_app(app)
 
-@app.route('/upload', methods=['POST'])
-def upload_file():
-    if 'file' not in request.files:
-        return jsonify({"error": "No file uploaded"}), 400
+with app.app_context():
+    db.create_all()
 
-    try:
-        df = pd.read_csv(request.files['file'])
-    except Exception as e:
-        return jsonify({"error": str(e)}), 400
+# ----------------- Create complaint -----------------
+@app.route("/report_issue", methods=["POST", "OPTIONS"])
+def report_issue():
+    if request.method == "OPTIONS":
+        return jsonify({"status": "ok"}), 200
 
-    result = run_smart_campus_pipeline(df)
-    return jsonify(result.to_dict(orient='records'))
-
-@app.route('/ml_input', methods=['POST'])
-def ml_input():
-    data = request.get_json(force=True, silent=True)
-    if not data:
-        return jsonify({"error": "No JSON received"}), 400
+    data = request.get_json()
 
     df = pd.DataFrame([{
-        'feature1': len(c.get('title', '')) % 10,
-        'feature2': 1 if c.get('priority', '').lower() == 'high' else 0,
-        'priority': c.get('priority', 'Medium'),
-        'severity': 5,
-        'area': c.get('category', 'Unknown'),
-        'hotspot': False
-    } for c in data])
+        "description": data.get("description", ""),
+        "repeat_count": data.get("repeat_count", 0),
+        "unsafe_flag": data.get("unsafe_flag", 0)
+    }])
+    ml_out = run_smart_campus_pipeline(df).iloc[0]
 
-    df = run_smart_campus_pipeline(df)
-    return jsonify(df.to_dict(orient='records'))
+    priority = ml_out.get("priority_label", "Low")
+    severity = int(ml_out.get("severity_score", 1))
+    is_hotspot = bool(ml_out.get("is_hotspot", False))
 
-@app.route('/report_issue', methods=['POST'])
-def report_issue():
-    return jsonify(dict(request.form))
+    category = data.get("category", "")
+
+    # RULE: Infrastructure/Electricity → High + hotspot
+    if category in ["Infrastructure", "Electricity"]:
+        priority = "High"
+        severity = max(severity, 3)
+        is_hotspot = True
+    elif severity == 2:
+        priority = "Medium"
+    elif severity >= 3:
+        priority = "High"
+
+    complaint = Complaint(
+        title=data.get("title", "No Title"),
+        description=data.get("description", ""),
+        category=category or "Uncategorized",
+        priority_label=priority,
+        severity_score=severity,
+        location=data.get("location", "Unknown"),
+        is_hotspot=is_hotspot,
+        latitude=data.get("latitude", 0),
+        longitude=data.get("longitude", 0),
+        created_at=datetime.utcnow(),
+        reporter=data.get("reporter", "Anonymous")
+    )
+    db.session.add(complaint)
+    db.session.commit()
+
+    return jsonify({
+        "message": "Complaint registered successfully",
+        "priority": priority,
+        "severity": severity,
+        "hotspot": is_hotspot
+    }), 201
+
+# ----------------- All complaints -----------------
+@app.route("/complaints", methods=["GET"])
+def get_complaints():
+    complaints = Complaint.query.order_by(Complaint.created_at.desc()).all()
+    return jsonify([{
+        "id": c.id,
+        "title": c.title,
+        "description": c.description,
+        "category": c.category,
+        "priority": c.priority_label,
+        "severity": c.severity_score,
+        "location": c.location,
+        "hotspot": c.is_hotspot,
+        "lat": c.latitude,
+        "lng": c.longitude,
+        "reporter": getattr(c, "reporter", "Anonymous"),
+        "time": c.created_at.strftime("%Y-%m-%d %H:%M:%S")
+    } for c in complaints])
+
+# ----------------- Dashboard counts -----------------
+@app.route("/complaints/count", methods=["GET"])
+def complaint_count():
+    today_start = datetime.combine(date.today(), datetime.min.time())
+    new_complaints = Complaint.query.filter(Complaint.created_at >= today_start).all()
+    
+    high = sum(1 for c in new_complaints if c.priority_label == "High")
+    medium = sum(1 for c in new_complaints if c.priority_label == "Medium")
+    low = sum(1 for c in new_complaints if c.priority_label == "Low")
+
+    return jsonify({
+        "total": len(new_complaints),
+        "high": high,
+        "medium": medium,
+        "low": low
+    })
 
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port)
+    app.run(host="0.0.0.0", port=5000, debug=True)

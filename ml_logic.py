@@ -1,112 +1,50 @@
 import pandas as pd
 import re
-
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.cluster import KMeans
 from sklearn.preprocessing import MinMaxScaler
 from scipy.sparse import hstack
 
-# ---------------- Text Cleaning ----------------
 def clean_text(text):
     if pd.isna(text):
         return ""
     text = str(text).lower()
     text = re.sub(r'[^a-zA-Z\s]', '', text)
-    text = re.sub(r'\s+', ' ', text).strip()
-    return text
+    return re.sub(r'\s+', ' ', text).strip()
 
 def extract_location(text):
-    if pd.isna(text):
-        return "Unknown"
-    match = re.search(r'near\s+([a-zA-Z\s]+)', text.lower())
+    match = re.search(r'near\s+([a-zA-Z\s]+)', str(text).lower())
     return match.group(1).strip() if match else "Unknown"
 
-# ---------------- Main ML Pipeline ----------------
 def run_smart_campus_pipeline(df):
     df = df.copy()
 
-    # ---------- Case 1: Text-based complaints ----------
-    required_cols = {'description', 'repeat_count', 'unsafe_flag'}
-    if required_cols.issubset(df.columns):
+    df['clean_description'] = df['description'].apply(clean_text)
 
-        df['clean_description'] = df['description'].apply(clean_text)
-
-        # If all text is empty, avoid TF-IDF crash
-        if df['clean_description'].str.len().sum() == 0:
-            df['priority_label'] = 'Low'
-            df['location'] = 'Unknown'
-            df['severity_score'] = 1
-            return df
-
-        tfidf = TfidfVectorizer(
-            max_features=3000,
-            ngram_range=(1, 2),
-            stop_words='english'
-        )
-        X_text = tfidf.fit_transform(df['clean_description'])
-
-        df['repeat_count'] = pd.to_numeric(df['repeat_count'], errors='coerce').fillna(0)
-        df['unsafe_flag'] = pd.to_numeric(df['unsafe_flag'], errors='coerce').fillna(0)
-
-        X_numeric = df[['repeat_count', 'unsafe_flag']].astype(float).values
-        X = hstack([X_text, X_numeric])
-
-        # Prevent KMeans crash on small data
-        n_clusters = min(3, len(df))
-        kmeans = KMeans(n_clusters=n_clusters, random_state=42, n_init=10)
-        df['cluster'] = kmeans.fit_predict(X)
-
-        cluster_priority = (
-            df.groupby('cluster')[['repeat_count', 'unsafe_flag']]
-            .mean()
-            .sum(axis=1)
-            .sort_values()
-        )
-
-        labels = ['Low', 'Medium', 'High'][:len(cluster_priority)]
-        priority_map = dict(zip(cluster_priority.index, labels))
-        df['priority_label'] = df['cluster'].map(priority_map)
-
-        df['location'] = df['description'].apply(extract_location)
-
-        priority_weight = {'Low': 1, 'Medium': 2, 'High': 3}
-        df['severity_score'] = df['priority_label'].map(priority_weight).fillna(1)
-
-        hotspot_df = df.groupby('location').agg(
-            total_issues=('description', 'count'),
-            repeat_sum=('repeat_count', 'sum'),
-            unsafe_sum=('unsafe_flag', 'sum'),
-            severity_sum=('severity_score', 'sum')
-        ).reset_index()
-
-        hotspot_df['hotspot_score'] = (
-            0.4 * hotspot_df['severity_sum'] +
-            0.3 * hotspot_df['repeat_sum'] +
-            0.3 * hotspot_df['unsafe_sum']
-        )
-
-        scaler = MinMaxScaler()
-        hotspot_df['hotspot_score'] = scaler.fit_transform(
-            hotspot_df[['hotspot_score']]
-        )
-
-        threshold = hotspot_df['hotspot_score'].quantile(0.75)
-        hotspot_df['is_hotspot'] = hotspot_df['hotspot_score'] >= threshold
-
-        return hotspot_df.sort_values(by='hotspot_score', ascending=False)
-
-    # ---------- Case 2: Numeric input from frontend ----------
-    elif {'feature1', 'feature2'}.issubset(df.columns):
-        df['hotspot_score'] = df['feature1'] * 0.6 + df['feature2'] * 0.4
-        df['is_hotspot'] = df['hotspot_score'] >= 0.5
-
-        df['priority'] = df['hotspot_score'].rank(ascending=False)
-        df['severity'] = pd.cut(
-            df['hotspot_score'],
-            bins=[-1, 0.3, 0.6, 1],
-            labels=['Low', 'Medium', 'High']
-        )
+    if df['clean_description'].str.len().sum() == 0:
+        df['priority_label'] = 'Low'
+        df['severity_score'] = 1
+        df['location'] = 'Unknown'
+        df['is_hotspot'] = False
         return df
 
-    else:
-        raise ValueError("Input DataFrame does not have required columns.")
+    tfidf = TfidfVectorizer(max_features=1000, stop_words='english')
+    X_text = tfidf.fit_transform(df['clean_description'])
+
+    X_numeric = df[['repeat_count', 'unsafe_flag']].astype(float).values
+    X = hstack([X_text, X_numeric])
+
+    n_clusters = min(3, len(df))
+    kmeans = KMeans(n_clusters=n_clusters, random_state=42, n_init=10)
+    df['cluster'] = kmeans.fit_predict(X)
+
+    priority_map = {0: 'Low', 1: 'Medium', 2: 'High'}
+    df['priority_label'] = df['cluster'].map(priority_map).fillna('Low')
+
+    severity_weight = {'Low': 1, 'Medium': 2, 'High': 3}
+    df['severity_score'] = df['priority_label'].map(severity_weight)
+
+    df['location'] = df['description'].apply(extract_location)
+    df['is_hotspot'] = df['severity_score'] >= 3
+
+    return df
