@@ -1,3 +1,7 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 * {
   margin: 0;
   padding: 0;
@@ -38,7 +42,6 @@
 
 .features {
   list-style: none;
-  padding: 0;
   margin-bottom: 26px;
 }
 
@@ -57,18 +60,12 @@
 
 .primary {
   background: #2563eb;
-  color: #ffffff;
+  color: white;
   padding: 12px 22px;
   border-radius: 12px;
   border: none;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.primary:hover {
-  background: #1d4ed8;
-  transform: translateY(-1px);
 }
 
 .secondary {
@@ -79,162 +76,6 @@
   border-radius: 12px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.secondary:hover {
-  background: #2563eb;
-  color: white;
-}
-
-.footer-text {
-  font-size: 12px;
-  color: #9ca3af;
-}
-
-/* ===== REPORT PAGE ===== */
-.report-page {
-  min-height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  position: relative;
-  padding: 40px 20px;
-}
-
-.report-card {
-  background: white;
-  padding: 40px;
-  width: 90%;
-  max-width: 480px;
-  border-radius: 20px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-  animation: slideUp 0.5s ease;
-}
-
-@keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.report-card h2 {
-  margin-bottom: 8px;
-  color: #111827;
-  font-size: 28px;
-  font-weight: 700;
-}
-
-.report-card input,
-.report-card textarea,
-.report-card select {
-  width: 100%;
-  padding: 12px;
-  border-radius: 8px;
-  border: 1px solid #d1d5db;
-  font-size: 14px;
-  font-family: inherit;
-  transition: all 0.2s ease;
-}
-
-.report-card input:focus,
-.report-card textarea:focus,
-.report-card select:focus {
-  border-color: #4f46e5;
-  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
-  outline: none;
-}
-
-.upload-label {
-  display: block;
-  padding: 14px;
-  border: 2px dashed #c7d2fe;
-  border-radius: 8px;
-  cursor: pointer;
-  text-align: center;
-  color: #4f46e5;
-  font-weight: 600;
-  font-size: 14px;
-  transition: all 0.2s ease;
-  background: #f5f3ff;
-}
-
-.upload-label:hover {
-  background: #ede9fe;
-  border-color: #a78bfa;
-}
-
-.preview-image {
-  width: 100%;
-  max-height: 240px;
-  object-fit: cover;
-  border-radius: 12px;
-  margin-top: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-.report-card button[type="submit"] {
-  width: 100%;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  border: none;
-  padding: 14px;
-  border-radius: 10px;
-  cursor: pointer;
-  font-weight: 700;
-  font-size: 16px;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
-}
-
-.report-card button[type="submit"]:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
-}
-
-.report-card button[type="submit"]:active {
-  transform: translateY(0);
-}
-
-.back-btn {
-  position: absolute;
-  top: 30px;
-  left: 30px;
-  padding: 10px 20px;
-  background: rgba(255, 255, 255, 0.95);
-  color: #111827;
-  border-radius: 10px;
-  border: none;
-  cursor: pointer;
-  font-weight: 600;
-  font-size: 14px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  transition: all 0.2s ease;
-}
-
-.back-btn:hover {
-  background: white;
-  transform: translateX(-4px);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
-}
-
-@media (max-width: 768px) {
-  .report-card {
-    padding: 30px 24px;
-  }
-
-  .back-btn {
-    top: 20px;
-    left: 20px;
-    padding: 8px 16px;
-    font-size: 13px;
-  }
 }
 
 /* ===== DASHBOARD LAYOUT ===== */
@@ -259,7 +100,6 @@
 
 .sidebar ul {
   list-style: none;
-  padding: 0;
 }
 
 .sidebar li {
@@ -272,7 +112,6 @@
   color: #d1d5db;
   text-decoration: none;
   border-radius: 6px;
-  font-weight: 500;
 }
 
 .nav-link:hover {
@@ -292,26 +131,6 @@
   overflow-y: auto;
 }
 
-/* ===== DASHBOARD HOME ===== */
-.dashboard-home {
-  padding: 10px;
-}
-
-.dashboard-header {
-  margin-bottom: 24px;
-}
-
-.dashboard-header h1 {
-  font-size: 26px;
-  font-weight: 600;
-  margin-bottom: 4px;
-}
-
-.dashboard-header p {
-  color: #6b7280;
-  font-size: 14px;
-}
-
 /* ===== KPI GRID ===== */
 .kpi-grid {
   display: grid;
@@ -325,22 +144,6 @@
   padding: 20px;
   border-radius: 14px;
   box-shadow: 0 8px 18px rgba(0, 0, 0, 0.08);
-  transition: transform 0.2s ease;
-}
-
-.kpi-card:hover {
-  transform: translateY(-4px);
-}
-
-.kpi-card h3 {
-  font-size: 14px;
-  color: #374151;
-}
-
-.kpi-card p {
-  font-size: 30px;
-  font-weight: bold;
-  margin-top: 8px;
 }
 
 .kpi-card.high {
@@ -355,31 +158,7 @@
   border-left: 5px solid #10b981;
 }
 
-/* ===== CHARTS ===== */
-.charts-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 28px;
-}
-
-/* ===== COMPLAINTS PAGE ===== */
-.complaints-page h1 {
-  margin-bottom: 16px;
-}
-
-.filters {
-  display: flex;
-  gap: 12px;
-  margin-bottom: 20px;
-}
-
-.filters select {
-  padding: 8px 10px;
-  border-radius: 6px;
-  border: 1px solid #d1d5db;
-  font-size: 14px;
-}
-
+/* ===== COMPLAINTS ===== */
 .complaints-list {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
@@ -392,13 +171,6 @@
   border-radius: 12px;
   box-shadow: 0 6px 12px rgba(0, 0, 0, 0.08);
   position: relative;
-  transition: all 0.2s ease;
-  cursor: pointer;
-}
-
-.complaint-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.12);
 }
 
 .badge {
@@ -424,73 +196,60 @@
   background: #10b981;
 }
 
-.complaint-card h3 {
-  margin-bottom: 6px;
-  padding-right: 70px;
+/* ================================
+   🔥 LEAFLET HOTSPOT GLOW & RIPPLE
+   ================================ */
+
+/* Base hotspot styling: tiny dots (radius controlled in React Leaflet) */
+.leaflet-interactive {
+  transition: transform 0.3s ease, filter 0.3s ease;
+  cursor: pointer;
 }
 
-.meta {
-  font-size: 12px;
-  color: #6b7280;
-  display: flex;
-  align-items: center;
-  gap: 6px;
+/* Glow per severity */
+.hotspot-red {
+  filter: drop-shadow(0 0 6px rgba(239, 68, 68, 0.9));
 }
 
-/* ===== HOTSPOTS PAGE ===== */
-.hotspots-page h1 {
-  margin-bottom: 4px;
+.hotspot-blue {
+  filter: drop-shadow(0 0 4px rgba(59, 130, 246, 0.7));
 }
 
-.hotspot-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 18px;
-  margin-top: 20px;
+.hotspot-yellow {
+  filter: drop-shadow(0 0 3px rgba(245, 158, 11, 0.6));
 }
 
-.hotspot-card {
-  background: white;
-  padding: 18px;
-  border-radius: 14px;
-  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.08);
-  position: relative;
-  transition: transform 0.2s ease;
+/* Hover scale and ripple */
+.hotspot-red:hover {
+  animation: rippleRed 1.5s ease-out infinite;
+  transform: scale(1.5);
 }
 
-.hotspot-card:hover {
-  transform: translateY(-4px);
+.hotspot-blue:hover {
+  animation: rippleBlue 1.5s ease-out infinite;
+  transform: scale(1.4);
 }
 
-.hotspot-card h3 {
-  margin-bottom: 6px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding-right: 70px;
+.hotspot-yellow:hover {
+  animation: rippleYellow 1.5s ease-out infinite;
+  transform: scale(1.3);
 }
 
-.hotspot-card p {
-  font-size: 13px;
-  color: #6b7280;
+/* Ripple animations */
+@keyframes rippleRed {
+  0%   { stroke-width: 1.2; filter: drop-shadow(0 0 6px rgba(239,68,68,0.9)); }
+  50%  { stroke-width: 4; filter: drop-shadow(0 0 20px rgba(239,68,68,0.5)); }
+  100% { stroke-width: 1.2; filter: drop-shadow(0 0 6px rgba(239,68,68,0.9)); }
 }
 
-/* ===== RESPONSIVE ===== */
-@media (max-width: 768px) {
-  .dashboard-home {
-    padding: 0;
-  }
+@keyframes rippleBlue {
+  0%   { stroke-width: 1.2; filter: drop-shadow(0 0 4px rgba(59,130,246,0.7)); }
+  50%  { stroke-width: 3; filter: drop-shadow(0 0 12px rgba(59,130,246,0.5)); }
+  100% { stroke-width: 1.2; filter: drop-shadow(0 0 4px rgba(59,130,246,0.7)); }
+}
 
-  .dashboard-header h1 {
-    font-size: 22px;
-  }
-
-  .btn-group {
-    flex-direction: column;
-  }
-
-  .primary,
-  .secondary {
-    width: 100%;
-  }
+@keyframes rippleYellow {
+  0%   { stroke-width: 1.2; filter: drop-shadow(0 0 3px rgba(245,158,11,0.6)); }
+  50%  { stroke-width: 2; filter: drop-shadow(0 0 8px rgba(245,158,11,0.4)); }
+  100% { stroke-width: 1.2; filter: drop-shadow(0 0 3px rgba(245,158,11,0.6)); }
 }

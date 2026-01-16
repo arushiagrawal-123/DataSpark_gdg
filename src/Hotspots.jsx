@@ -1,51 +1,122 @@
-import { useState, useEffect } from "react";
-import { FaMapMarkerAlt } from "react-icons/fa";
+// src/components/Hotspots.jsx
+import React, { useEffect, useState } from "react";
+import { MapContainer, TileLayer, Circle, Tooltip } from "react-leaflet";
 import axios from "axios";
+import "leaflet/dist/leaflet.css";
 
-const API_URL = "http://localhost:5000";
+// --------------------
+// HARDCODED BASE HOTSPOTS
+// --------------------
+const BASE_HOTSPOTS = [
+  {
+    id: 1,
+    name: "Main Academic Block",
+    lat: 25.4921,
+    lng: 81.8639,
+    baseLevel: "high",
+  },
+  {
+    id: 2,
+    name: "Hostel Area",
+    lat: 25.4938,
+    lng: 81.8654,
+    baseLevel: "medium",
+  },
+  {
+    id: 3,
+    name: "Sports Complex",
+    lat: 25.4913,
+    lng: 81.8618,
+    baseLevel: "low",
+  },
+];
+
+// --------------------
+// VISUAL CONFIG
+// --------------------
+const levelConfig = {
+  high: { color: "#ef4444", radius: 35, className: "hotspot-red", scale: 1.5 },
+  medium: { color: "#f59e0b", radius: 28, className: "hotspot-yellow", scale: 1.3 },
+  low: { color: "#3b82f6", radius: 22, className: "hotspot-blue", scale: 1.2 },
+};
 
 export default function Hotspots() {
-  const [hotspots, setHotspots] = useState([]);
-
-  const fetchHotspots = async () => {
-    const res = await axios.get(`${API_URL}/complaints`);
-    const complaints = res.data.filter(c => c.hotspot);
-
-    const locationMap = {};
-    complaints.forEach(c => {
-      const loc = c.location || "Unknown";
-      if (!locationMap[loc]) locationMap[loc] = { complaints: 0, level: "Low", lastReported: "" };
-      locationMap[loc].complaints += 1;
-      if (c.severity >= 3) locationMap[loc].level = "High";
-      else if (c.severity === 2 && locationMap[loc].level !== "High") locationMap[loc].level = "Medium";
-      const cTime = c.time;
-      if (!locationMap[loc].lastReported || new Date(cTime) > new Date(locationMap[loc].lastReported)) {
-        locationMap[loc].lastReported = cTime;
-      }
-    });
-
-    setHotspots(Object.entries(locationMap).map(([area, info], i) => ({ id: i + 1, area, ...info })));
-  };
+  const [hotspots, setHotspots] = useState(BASE_HOTSPOTS);
 
   useEffect(() => {
-    fetchHotspots();
-    const interval = setInterval(fetchHotspots, 10000);
-    return () => clearInterval(interval);
+    fetchComplaintsAndUpdateHotspots();
   }, []);
 
+  const fetchComplaintsAndUpdateHotspots = async () => {
+    try {
+      const res = await axios.get(`${import.meta.env.VITE_API_URL}/complaints`);
+      const complaints = res.data;
+
+      // Count complaints near each hotspot
+      const updated = BASE_HOTSPOTS.map((spot) => {
+        const count = complaints.filter(
+          (c) =>
+            Math.abs(c.lat - spot.lat) < 0.002 &&
+            Math.abs(c.lng - spot.lng) < 0.002
+        ).length;
+
+        return {
+          ...spot,
+          intensity: count,
+        };
+      });
+
+      setHotspots(updated);
+    } catch (err) {
+      console.error("Failed to fetch complaints, using base hotspots only");
+      setHotspots(BASE_HOTSPOTS);
+    }
+  };
+
   return (
-    <div className="p-8">
-      <h1 className="text-2xl font-bold mb-6">Hotspots</h1>
-      {hotspots.length === 0 ? <p>No hotspots found</p> :
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {hotspots.map(h => (
-            <div key={h.id} className="p-4 bg-white rounded-lg shadow-md">
-              <h3><FaMapMarkerAlt className="inline mr-2" />{h.area}</h3>
-              <p>{h.complaints} complaints • Level: {h.level}</p>
-              <p className="text-sm text-gray-500">Last reported: {h.lastReported}</p>
-            </div>
-          ))}
-        </div>}
+    <div className="hotspots-page">
+      <h1 className="text-2xl font-bold mb-2">Campus Hotspots</h1>
+      <p className="text-gray-500 mb-4">
+        Red = High | Yellow = Medium | Blue = Low
+      </p>
+
+      <MapContainer
+        center={[25.4925, 81.8638]}
+        zoom={16}
+        style={{ height: "500px", width: "100%", borderRadius: "16px" }}
+      >
+        <TileLayer
+          attribution="© OpenStreetMap contributors"
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+        />
+
+        {hotspots.map((spot) => {
+          const config = levelConfig[spot.baseLevel];
+          const extraRadius = (spot.intensity || 0) * 40;
+
+          return (
+            <Circle
+              key={spot.id}
+              center={[spot.lat, spot.lng]}
+              radius={config.radius + extraRadius}
+              pathOptions={{
+                color: config.color,
+                fillColor: config.color,
+                fillOpacity: 0.35,
+              }}
+              className={config.className} // glow + ripple from CSS
+            >
+              <Tooltip>
+                <strong>{spot.name}</strong>
+                <br />
+                Base Level: {spot.baseLevel.toUpperCase()}
+                <br />
+                Complaints nearby: {spot.intensity || 0}
+              </Tooltip>
+            </Circle>
+          );
+        })}
+      </MapContainer>
     </div>
   );
 }
